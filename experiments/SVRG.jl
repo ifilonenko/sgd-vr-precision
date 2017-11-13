@@ -26,10 +26,9 @@ julia> SVRG{alpha,niters,nepochs}(w0,wopt,X,Y,g_l)
 """
 struct SVRG{a,T,K} <: NonQuantized{a,T,K}
    SVRG{a,T,K}(w0::A,wopt::A,X::A,Y::A,g_l) where {A <:Array,a,T,K} =
-      run_algo(SVRG{a,T,K},wopt,X,Y,g_l)
+      run_algo(SVRG{a,T,K},w0,wopt,X,Y,g_l)
 end
-function run_algo(::Type{SVRG{a,T,K}},w0::A,wopt::A,X::A,Y::A,g_l) where
-   {A <: Array,a,T,K}
+function run_algo(::Type{SVRG{a,T,K}},w0,wopt,X,Y,g_l) where {a,T,K}
       w = w0
       (N, d) = size(X)
       dist_to_optimum = zeros(T*K)

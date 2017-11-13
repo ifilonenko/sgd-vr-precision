@@ -29,10 +29,10 @@ julia> LPSVRG{alpha,niters,nepochs,B}(w0,wopt,X,Y,g_l)
 struct LPSVRG{a,T,K,B <: Scaled} <: Quantized{a,T,K,B}
    LPSVRG{a,T,K,B}(w0::A,wopt::A,X::A,Y::A,g_l) where
       {A <:Array,B <: Scaled,a,T,K} =
-      run_algo(LPSVRG{a,T,K,B},wopt,X,Y,g_l)
+      run_algo(LPSVRG{a,T,K,B},w0,wopt,X,Y,g_l)
 end
-function run_algo(::Type{LPSVRG{a,T,K,B}},w0::A,wopt::A,X::A,Y::A,g_l) where
-   {A <: Array,B <: Scaled,a,T,K}
+function run_algo(::Type{LPSVRG{a,T,K,B}},w0,wopt,X,Y,g_l) where
+   {B <: Scaled,a,T,K}
       w = B(w0)
       (N, d) = size(X)
       dist_to_optimum = zeros(T*K)

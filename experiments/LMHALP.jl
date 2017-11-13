@@ -34,7 +34,7 @@ julia> LMHALP{alpha,niters,nepochs,R}(w0,wopt,X,Y,b,p,g_l)
 struct LMHALP{a,T,K,R <: Scaled} <: Quantized{a,T,K,R}
    LMHALP{a,T,K,R}(w0::A,wopt::A,X::A,Y::A,b::I,p::I,g_l) where
       {A <:Array,R <: Scaled,I <: Integer,a,T,K} =
-      run_algo(LMHALP{a,T,K,R},wopt,X,Y,b,p,g_l)
+      run_algo(LMHALP{a,T,K,R},w0,wopt,X,Y,b,p,g_l)
 end
 function rounder(b::Integer)
     if b-1 <= maxf(Int8)
@@ -47,8 +47,8 @@ function rounder(b::Integer)
         return Int64
     end
 end
-function run_algo(::Type{LMHALP{a,T,K,R}},w0::A,wopt::A,X::A,Y::A,b::I,p::I,g_l) where
-   {A <: Array,R <: Scaled,I <: Integer,a,T,K}
+function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,g_l) where
+   {R <: Scaled,a,T,K}
       w = w0
       (N, d) = size(X)
       z = zeros(d)
