@@ -5,9 +5,11 @@ module GradientModels
     abstract type Quantized{alpha,T,K,S <: Scaled} <: Real end
 export NonQuantized,
     Quantized,
+    GenericArray,
     SVRG,
     LPSVRG,
     LMHALP
+
 include("SVRG.jl");
 include("LPSVRG.jl");
 include("LMHALP.jl");
