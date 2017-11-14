@@ -23,8 +23,9 @@ julia> SVRG{alpha,niters,nepochs}(w0,wopt,X,Y,g_l)
 ```
 """
 struct SVRG{a,T,K} <: NonQuantized{a,T,K}
-   SVRG{a,T,K}(w0::A,wopt::A,X::AT,Y::A,g_l) where
-      {A<:Array{Float64,1}, AT<:Array{Float64,2},a,T,K} =
+   SVRG{a,T,K}(w0::AbstractArray{F,N},wopt::AbstractArray{F,N},
+      X::AbstractArray{F,N2},Y::AbstractArray{F2,N},g_l) where
+      {F<:Number,F2<:Number,a,T,K,N,N2} =
       run_algo(SVRG{a,T,K},w0,wopt,X,Y,g_l)
 end
 function run_algo(::Type{SVRG{a,T,K}},w0,wopt,X,Y,g_l) where {a,T,K}

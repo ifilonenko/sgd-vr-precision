@@ -34,8 +34,9 @@ julia> LMHALP{alpha,niters,nepochs,R}(w0,wopt,X,Y,b,p,mu,g_l)
 ```
 """
 struct LMHALP{a,T,K,R <: Scaled} <: Quantized{a,T,K,R}
-   LMHALP{a,T,K,R}(w0::A,wopt::A,X::AT,Y::A,b::I,p::I,mu::Float64,g_l) where
-      {A<:Array{Float64,1},AT<:Array{Float64,2},R <: Scaled,I <: Integer,a,T,K} =
+   LMHALP{a,T,K,R}(w0::AbstractArray{F,N},wopt::AbstractArray{F,N},
+   X::AbstractArray{F,N2},Y::AbstractArray{F2,N},b,p,mu,g_l) where
+        {F<:Number,F2<:Number,R <: Scaled,a,T,K,N,N2} =
       run_algo(LMHALP{a,T,K,R},w0,wopt,X,Y,b,p,mu,g_l)
 end
 function rounder(b::Integer)

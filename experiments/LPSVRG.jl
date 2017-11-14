@@ -25,8 +25,9 @@ julia> LPSVRG{alpha,niters,nepochs,B}(w0,wopt,X,Y,g_l)
 ```
 """
 struct LPSVRG{a,T,K,B <: Scaled} <: Quantized{a,T,K,B}
-   LPSVRG{a,T,K,B}(w0::A,wopt::A,X::AT,Y::A,g_l) where
-      {A <:Array{Float64,1},AT<:Array{Float64,2},B <: Scaled,a,T,K} =
+   LPSVRG{a,T,K,B}(w0::AbstractArray{F,N},wopt::AbstractArray{F,N},
+   X::AbstractArray{F,N2},Y::AbstractArray{F2,N},g_l) where
+      {F<:Number,F2<:Number,B <: Scaled,a,T,K,N,N2} =
       run_algo(LPSVRG{a,T,K,B},w0,wopt,X,Y,g_l)
 end
 function run_algo(::Type{LPSVRG{a,T,K,B}},w0,wopt,X,Y,g_l) where
