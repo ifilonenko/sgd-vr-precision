@@ -14,6 +14,7 @@ Inputs:
    Y :: Array{Float64}, training Y values (labels)
    b :: Int, number of bits to quantize (blue box bits)
    p :: Int, number of bits to quantize (purple box bits)
+   mu :: Float64, scale factor
 
    g_l :: (generic function) :: gradient loss function you wish to minimize
       This function must take in (phi,i,X,Y)
@@ -24,17 +25,18 @@ Inputs:
 
 # Examples
 ```julia-repl
-julia> R = Scaled{Int8,7,1.0/128.0,Randomized}
-julia> b = 7
-julia> p = 7
-julia> LMHALP{alpha,niters,nepochs,R}(w0,wopt,X,Y,b,p,g_l)
+julia> R = Scaled{Int8,7,1.0/128.0,Randomized};
+julia> b = 7;
+julia> p = 7;
+julia> mu = 0.0001;
+julia> LMHALP{alpha,niters,nepochs,R}(w0,wopt,X,Y,b,p,mu,g_l)
 ...
 ```
 """
 struct LMHALP{a,T,K,R <: Scaled} <: Quantized{a,T,K,R}
-   LMHALP{a,T,K,R}(w0::A,wopt::A,X::AT,Y::A,b::I,p::I,g_l) where
+   LMHALP{a,T,K,R}(w0::A,wopt::A,X::AT,Y::A,b::I,p::I,mu::Float64,g_l) where
       {A<:Array{Float64,1},AT<:Array{Float64,2},R <: Scaled,I <: Integer,a,T,K} =
-      run_algo(LMHALP{a,T,K,R},w0,wopt,X,Y,b,p,g_l)
+      run_algo(LMHALP{a,T,K,R},w0,wopt,X,Y,b,p,mu,g_l)
 end
 function rounder(b::Integer)
     if b-1 <= maxf(Int8)
@@ -47,7 +49,7 @@ function rounder(b::Integer)
         return Int64
     end
 end
-function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,g_l) where
+function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,g_l) where
    {R <: Scaled,a,T,K}
       w = w0
       (N, d) = size(X)
@@ -61,9 +63,9 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,g_l) where
           gtilde = mapreduce(i->g_l(phi,i,X,Y)*X[i,:], +, 1:N)
           s = norm(gtilde)/(mu*(2^(b-1)-1))
           blue_box = Scaled{rounder(b),b-1,s,Randomized}
-          p_s = (s./get_s(R))*2.0^(b-get_F(R)+1-p)
+          p_s = (s./get_s(R))*2.0^(b-get_f(R)+1-p)
           purple_box = Scaled{rounder(p),p-1,p_s,Randomized}
-          green_box = red_box*purple_box
+          green_box = R*purple_box
           assert(subdomain(blue_box,green_box))
           htilde = green_box(a*gtilde)
           z = zeros(blue_box,d)
