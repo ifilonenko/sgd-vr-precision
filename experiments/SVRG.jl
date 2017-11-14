@@ -12,11 +12,9 @@ Inputs:
    X :: Array{Float64,2}, training X values (input features)
    Y :: Array{Float64,1}, training Y values (labels)
    g_l :: (generic function) :: gradient loss function you wish to minimize
-      This function must take in (phi,i,X,Y)
-         - phi,the full gradient
+      This function must take in (wtilde,i)
+         - wtilde, new w value per epoch
          - i,index
-         - X,training features
-         - Y,training labels
 
 # Examples
 ```julia-repl
@@ -34,12 +32,12 @@ function run_algo(::Type{SVRG{a,T,K}},w0,wopt,X,Y,g_l) where {a,T,K}
       (N, d) = size(X)
       dist_to_optimum = zeros(T*K)
       for k = 1:K
-         wtidle = w;
-         phi = map(i -> X[i,:]'*wtidle, 1:N)
-         gtilde = mapreduce(i->g_l(phi,i,X,Y)*X[i,:], +, 1:N)
+         wtilde = w;
+         gtilde = mapreduce(i->g_l(wilde,i), +, 1:N)
+         w = wtilde;
          for t = 1:T
             i = rand(1:N)
-            w = w - a*(g_l(w,i,X,Y) - g_l(wtilde,i,X,Y) + gtilde)
+            w = w - a*(g_l(w,i) - g_l(wtilde,i) + gtilde)
             dist_to_optimum[k + (epi-1)*niters] = norm(w - wopt);
          end
       end
