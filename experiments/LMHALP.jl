@@ -63,7 +63,7 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
       for k = 1:K
           w = w + z
           phi = map(i -> X[i,:]'*w, 1:N)
-          gtilde = mapreduce(i->g_l(phi,X[i,:]',Y[i]), +, 1:N)/N
+          gtilde = mapreduce(i->g_l(phi,X[i,:]',Y[i])*X[i,:]', +, 1:N)/N
           s = norm(gtilde)/(mu*(2^(b-1)-1))
           blue_box = Scaled{rounder(b),b-1,s,Randomized}
           p_s = (s./get_s(R))*2.0^(b-get_f(R)+1-p)
@@ -76,10 +76,10 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
               i = rand(1:N)
               xi = X[i,:]'
               yi = Y[i]
-              inner_l = g_l((phi+xi*z),xi,yi)
-              inner_purple = a.*(inner_l-g_l(phi,x,y))
-              i_g = green_box(purple_box(inner_purple))
-              z = blue_box(float(green_box(float(z)) - i_g - htilde))
+              inner_l = g_l(phi+xi*z,xi,yi)
+              inner_purple = a.*(inner_l-g_l(phi,xi,yi))
+              i_g = green_box(purple_box(inner_purple)*xi)
+              z = blue_box(float(green_box(float(z)) - (i_g - htilde)))
               dist_to_optimum[t+((k-1)*T)] = norm(z + wtilde - wopt);
           end
       end
