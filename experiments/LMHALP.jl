@@ -18,10 +18,8 @@ Inputs:
    tol :: Float64, tolerance from [0,1.0]
 
    g_l :: (generic function) :: gradient loss function you wish to minimize
-      This function must take in (phi,i,X,Y)
+      This function must take in (phi,Y)
          - phi,the full gradient
-         - i,index
-         - X,training features
          - Y,training labels
 
 # Examples
@@ -63,7 +61,7 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
       for k = 1:K
           w = w + z
           phi = map(i -> X[i,:]'*w, 1:N)
-          gtilde = mapreduce(i->g_l(phi,X[i,:]',Y[i])*X[i,:]', +, 1:N)/N
+          gtilde = (mapreduce(i->g_l(phi[i],Y[i])*X[i,:]', +, 1:N) / N)[1,:]
           s = norm(gtilde)/(mu*(2^(b-1)-1))
           blue_box = Scaled{rounder(b),b-1,s,Randomized}
           p_s = (s./get_s(R))*2.0^(b-get_f(R)+1-p)
@@ -76,9 +74,11 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
               i = rand(1:N)
               xi = X[i,:]'
               yi = Y[i]
-              inner_l = g_l(phi+xi*z,xi,yi)
-              inner_purple = a.*(inner_l-g_l(phi,xi,yi))
+              inner_l = g_l(phi+xi*z,yi)
+              inner_purple = a.*(inner_l-g_l(phi[i],yi))
               i_g = green_box(purple_box(inner_purple)*xi)
+              println(typeof(i_g))
+              println(typeof(htilde))
               z = blue_box(float(green_box(float(z)) - (i_g - htilde)))
               dist_to_optimum[t+((k-1)*T)] = norm(z + wtilde - wopt);
           end
