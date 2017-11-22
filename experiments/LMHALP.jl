@@ -74,13 +74,11 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
               i = rand(1:N)
               xi = X[i,:]'
               yi = Y[i]
-              inner_l = g_l(phi+xi*z,yi)
+              inner_l = g_l(phi[i]+xi*z,yi)
               inner_purple = a.*(inner_l-g_l(phi[i],yi))
-              i_g = green_box(purple_box(inner_purple)*xi)
-              println(typeof(i_g))
-              println(typeof(htilde))
+              i_g = green_box((purple_box(inner_purple)*xi)[1,:])
               z = blue_box(float(green_box(float(z)) - (i_g - htilde)))
-              dist_to_optimum[t+((k-1)*T)] = norm(z + wtilde - wopt);
+              dist_to_optimum[t+((k-1)*T)] = norm(z + w - wopt);
           end
       end
       return (w, dist_to_optimum);
