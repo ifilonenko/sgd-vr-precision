@@ -40,7 +40,7 @@ function run_algo(::Type{LPSVRG{a,T,K,B}},w0,wopt,X,Y,mu,g_l) where {a,T,K,B}
    blue_box = B
    for k = 1:K
       wtilde = wtilde + z
-      gtilde = (mapreduce(i->g_l(wtilde,X[i,:]',Y[i]), +, 1:N) / N)[1,:]
+      gtilde = mapreduce(i->g_l(wtilde,X[i,:]',Y[i]), +, 1:N) / N
       s = norm(gtilde)/(mu*(2^(get_f(blue_box))-1))
       blue_box = Scaled{get_T(B),get_f(B),s,get_r(B)}
       z = zeros(d)

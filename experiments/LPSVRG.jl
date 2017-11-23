@@ -38,7 +38,7 @@ function run_algo(::Type{LPSVRG{a,T,K,B}},w0,wopt,X,Y,g_l) where {a,T,K,B}
    dist_to_optimum = zeros(T*K)
    for k = 1:K
       wtilde = w
-      gtilde = (mapreduce(i->g_l(wtilde,X[i,:]',Y[i]), +, 1:N) / N)[1,:]
+      gtilde = mapreduce(i->g_l(wtilde,X[i,:]',Y[i]), +, 1:N) / N
       for t = 1:T
          i = rand(1:N)
          xi = X[i,:]';
