@@ -30,9 +30,9 @@ struct HALP{a,T,K,B <: Scaled} <: Quantized{a,T,K,B}
    HALP{a,T,K,B}(w0::AbstractArray{F,N},wopt::AbstractArray{F,N},
    X::AbstractArray{F,N2},Y::AbstractArray{F2,N},mu::Real,g_l) where
       {F<:Number,F2<:Number,B <: Scaled,a,T,K,N,N2} =
-      run_algo(LPSVRG{a,T,K,B},w0,wopt,X,Y,mu,g_l)
+      run_algo(HALP{a,T,K,B},w0,wopt,X,Y,mu,g_l)
 end
-function run_algo(::Type{LPSVRG{a,T,K,B}},w0,wopt,X,Y,mu,g_l) where {a,T,K,B}
+function run_algo(::Type{HALP{a,T,K,B}},w0,wopt,X,Y,mu,g_l) where {a,T,K,B}
    wtilde = w0
    (N, d) = size(X)
    z = zeros(d)
