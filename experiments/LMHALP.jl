@@ -57,15 +57,15 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
       z = zeros(d)
       dist_to_optimum = zeros(T*K)
       s = 1.0
-      X = R(X)
+      X = R(X) # this line causes the numbers to get too small
       for k = 1:K
           w = w + z
           phi = map(i -> X[i,:]'*w, 1:N)
           gtilde = (mapreduce(i->g_l(phi[i],Y[i])*X[i,:]', +, 1:N) / N)[1,:]
-          s = norm(gtilde)/(mu*(2^(b-1)-1))
-          blue_box = Scaled{rounder(b),b-1,s,Randomized}
-          p_s = (s./get_s(R))*2.0^(b-get_f(R)+1-p)
-          purple_box = Scaled{rounder(p),p-1,p_s,Randomized}
+          s = norm(gtilde)/(mu*(2.0^(b-1)-1))
+          blue_box = Scaled{rounder(b),b-1,s,SatAndRandomized}
+          p_s = (s./get_s(R))*2.0^(b-(get_f(R)+1)-p)
+          purple_box = Scaled{rounder(p),p-1,p_s,SatAndRandomized}
           green_box = R*purple_box
           assert(subdomain(blue_box,green_box,tol))
           htilde = green_box(a*gtilde)
@@ -74,10 +74,10 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
               i = rand(1:N)
               xi = X[i,:]'
               yi = Y[i]
-              inner_l = g_l(phi[i]+xi*z,yi)
-              inner_purple = a.*(inner_l-g_l(phi[i],yi))
+              inner_l = g_l(phi[i,:]+xi*z,yi)
+              inner_purple = a.*(inner_l-g_l(phi[i,:],yi))
               i_g = green_box((purple_box(inner_purple)*xi)[1,:])
-              z = blue_box(float(green_box(float(z)) - (i_g - htilde)))
+              z = blue_box(float(green_box(float(z)) - i_g - htilde))
               dist_to_optimum[t+((k-1)*T)] = norm(z + w - wopt);
           end
       end
