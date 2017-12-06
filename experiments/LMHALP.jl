@@ -35,9 +35,9 @@ julia> LMHALP{alpha,niters,nepochs,R}(w0,wopt,X,Y,b,p,mu,tol,g_l)
 """
 struct LMHALP{a,T,K,R <: Scaled} <: Quantized{a,T,K,R}
    LMHALP{a,T,K,R}(w0::AbstractArray{F,N},wopt::AbstractArray{F,N},
-   X::AbstractArray{F,N2},Y::AbstractArray{F2,N},b,p,mu,tol,g_l) where
+   X::AbstractArray{F,N2},Y::AbstractArray{F2,N},b,p,mu,tol,reg,g_l) where
         {F<:Number,F2<:Number,R <: Scaled,a,T,K,N,N2} =
-      run_algo(LMHALP{a,T,K,R},w0,wopt,X,Y,b,p,mu,tol,g_l)
+      run_algo(LMHALP{a,T,K,R},w0,wopt,X,Y,b,p,mu,tol,reg,g_l)
 end
 function rounder(b::Integer)
     if b-1 <= maxf(Int8)
@@ -50,7 +50,7 @@ function rounder(b::Integer)
         return Int64
     end
 end
-function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
+function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,reg,g_l) where
    {R <: Scaled,a,T,K}
       w = w0
       (N, d) = size(X)
@@ -61,7 +61,7 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
       for k = 1:K
           w = w + z
           phi = map(i -> X[i,:]'*w, 1:N)
-          gtilde = (mapreduce(i->g_l(phi[i],Y[i])*X[i,:]', +, 1:N) / N)[1,:]
+          gtilde = (mapreduce(i->g_l(phi[i],Y[i])*X[i,:]', +, 1:N) / N)[1,:]+(w*reg)
           s = norm(gtilde)/(mu*(2.0^(b-1)-1))
           blue_box = Scaled{rounder(b),b-1,s,SatAndRandomized}
           p_s = (s./get_s(R))*2.0^(b-(get_f(R)+1)-p)
@@ -75,7 +75,7 @@ function run_algo(::Type{LMHALP{a,T,K,R}},w0,wopt,X,Y,b,p,mu,tol,g_l) where
               xi = X[i,:]'
               yi = Y[i]
               inner_l = g_l(phi[i,:]+xi*z,yi)
-              inner_purple = a.*(inner_l-g_l(phi[i,:],yi))
+              inner_purple = a.*(inner_l-(g_l(phi[i,:],yi)))
               i_g = green_box((purple_box(inner_purple)*xi)[1,:])
               z = blue_box(float(green_box(float(z)) - i_g - htilde))
               dist_to_optimum[t+((k-1)*T)] = norm(z + w - wopt);
